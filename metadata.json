@@ -1,0 +1,12 @@
+{
+  "name": "Pixabay Search Provider",
+  "description": "Search for images en Pixabay easily.",
+  "uuid": "pixabay-search-provider@atareao.es",
+  "url": "https://github.com/atareao/pixabay-search-provider",
+  "donations": {
+    "github": "atareao"
+  },
+  "shell-version": ["45", "46", "47"],
+  "settings-schema": "org.gnome.shell.extensions.pixabay-search-provider"
+}
+

@@ -1,0 +1,27 @@
+{
+  "name": "pixabay-search-provider",
+  "version": "1",
+  "description": "A TypeScript GNOME Extension",
+  "type": "module",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atareao/pixabay-search-provider.git"
+  },
+  "author": "Lorenzo Carbonell <a.k.a. atareao>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/atareao/pixabay-search-provider/issues"
+  },
+  "homepage": "https://github.com/atareao/pixabay-search-provider#readme",
+  "sideEffects": false,
+  "devDependencies": {
+    "eslint": "^9.15.0",
+    "eslint-plugin-jsdoc": "^50.5.0",
+    "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "@girs/gjs": "4.0.0-beta.19",
+    "@girs/gnome-shell": "^47.0.0"
+  }
+}

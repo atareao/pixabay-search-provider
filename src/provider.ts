@@ -11,7 +11,7 @@ interface VSStorage {
   };
 }
 
-export default class VSCodeSearchProvider<
+export default class PixabaySearchProvider<
   T extends Extension & { _settings: Gio.Settings | null },
 > implements AppSearchProvider
 {

@@ -1,4 +1,4 @@
-import Soup from "gi://Soup";
+import Soup from "gi://Soup?version=3.0";
 import Gio from 'gi://Gio';
 
 interface PixabayResponse {
@@ -33,7 +33,7 @@ interface Image {
 }
 
 export default class Pixabay {
-    private baseUrl = "htps://pixabay.com/api/"
+    private baseUrl = "htps://pixabay.com/api/";
     private _key: string | null = null;
     private _lang: string | null = null;
 

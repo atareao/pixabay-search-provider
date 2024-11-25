@@ -21,7 +21,10 @@
     "typescript": "^5.7.2"
   },
   "dependencies": {
+    "@girs/clutter-15": "15.0.0-4.0.0-beta.19",
     "@girs/gjs": "4.0.0-beta.19",
-    "@girs/gnome-shell": "^47.0.0"
+    "@girs/gnome-shell": "^47.0.0",
+    "@girs/gobject-2.0": "2.82.2-4.0.0-beta.19",
+    "@girs/soup-3.0": "3.6.0-4.0.0-beta.19"
   }
 }

@@ -12,10 +12,6 @@
     },
     "include": [
         "gnome.d.ts",
-        "src/**/*.ts"
-    ],
-    "files": [
-        "extension.ts",
-        "prefs.ts"
+        "src"
     ]
 }

@@ -1,12 +1,13 @@
+import GLib from "gi://GLib";
 import Soup from "gi://Soup?version=3.0";
-import Gio from 'gi://Gio';
 
 interface PixabayResponse {
     total: number;
     totalHits: number;
-    hits: Image[];
+    hits: PixabayImage[];
 }
-interface Image {
+export interface PixabayImage {
+    id: number;
     pageURL: string;
     type: string;
     tags: string;
@@ -32,7 +33,7 @@ interface Image {
 
 }
 
-export default class Pixabay {
+export class Pixabay {
     private baseUrl = "htps://pixabay.com/api/";
     private _key: string | null = null;
     private _lang: string | null = null;
@@ -42,8 +43,7 @@ export default class Pixabay {
         this._lang = lang;
     }
 
-    search(query: string): Image[] {
-        const images: Image[] = [];
+    search(query: string, getResult: Function, callback: Function, timeoutId: number): void {
         try{
             const session = new Soup.Session();
             const message = Soup.Message.new_from_encoded_form(
@@ -55,17 +55,35 @@ export default class Pixabay {
                     q: query
                 })
             );
-            const bytes = session.send_and_read(message, Gio.Cancellable.new());
-            if(bytes !== null){
-                const response = (new TextDecoder())
-                    .decode(bytes.get_data()?.buffer);
-                console.log("Response: ", response);
-                const pixabayResponse: PixabayResponse = JSON.parse(response);
-                return pixabayResponse.hits;
-            }
+            session.send_and_read_async(
+                message,
+                GLib.PRIORITY_DEFAULT,
+                null,
+                (session, result) => {
+                    try{
+                        if (session === null) {
+                            throw new Error("Session is null");
+                        }
+                        const bytes = session.send_and_read_finish(result);
+                        if(bytes !== null){
+                            const response = (new TextDecoder())
+                                .decode(bytes.get_data()?.buffer);
+                            console.log("Response: ", response);
+                            const pixabayResponse: PixabayResponse = JSON.parse(response);
+                            getResult(null, pixabayResponse.hits, callback, timeoutId);
+                            return;
+                        }else{
+                            getResult("Nothing found", null, callback, timeoutId);
+                        }
+                    }catch(e){
+                        console.error("Error: ", e);
+                        getResult(`Error: ${e}`, null, callback, timeoutId);
+                    }
+                }
+            );
         }catch(e){
             console.error("Error: ", e);
+            getResult(`Error: ${e}`, null, callback, timeoutId);
         }
-        return images;
     }
 }

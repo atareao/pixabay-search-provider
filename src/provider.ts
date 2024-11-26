@@ -2,9 +2,10 @@ import GLib from "gi://GLib";
 import Gio from "gi://Gio";
 import Shell from "gi://Shell";
 import Clutter from 'gi://Clutter?version=15';
-import { Extension } from "resource:///org/gnome/shell/extensions/extension.js";
+import { Extension, gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
 import { AppSearchProvider } from "resource:///org/gnome/shell/ui/appDisplay.js";
 import { fileExists, readFile, uniqueId } from "./util.js";
+import { Pixabay, PixabayImage }  from "./pixabay.js";
 
 interface VSStorage {
     profileAssociations: {
@@ -12,38 +13,36 @@ interface VSStorage {
     };
 }
 
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-const Gettext = imports.gettext.domain(Me.metadata.uuid);
-const _ = Gettext.gettext;
-
-
-
-class Message {
-    _id: string;
-    _name: string;
-    _description: string;
-    _createIcon: Function;
-
-    constructor(id: string, name: string, description: string){
-        this._id = id;
-        this._name = name;
-        this._description = description;
-        this._createIcon = () => {};
-    }
-
-}
 interface ResultMeta {
     id: string;
     name: string;
     description?: string;
     clipboardText?: string;
-    createIcon?: string;
+    createIcon?: Function;
+}
+
+class Message implements ResultMeta {
+    id: string;
+    name: string;
+    description?: string;
+    clipboardText?: string;
+    createIcon?: Function;
+
+    constructor(id: string, name: string, description: string){
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.clipboardText = "";
+        this.createIcon = () => {};
+    }
+
 }
 
 export default class PixabaySearchProvider<
     T extends Extension & { _settings: Gio.Settings | null },
 > implements AppSearchProvider {
     workspaces: Record<string, { name: string; path: string }> = {};
+    _pixabayClient: Pixabay;
     _extension: T;
     _timeoutId: number;
     _results: Map<string, ResultMeta>;
@@ -52,6 +51,7 @@ export default class PixabaySearchProvider<
     appInfo: Gio.DesktopAppInfo | undefined;
 
     constructor(extension: T) {
+        this._pixabayClient = new Pixabay("", "es");
         this._extension = extension;
         this._findApp();
         this._loadWorkspaces();
@@ -185,7 +185,7 @@ export default class PixabaySearchProvider<
         callback([identifier]);
     }
 
-    async getInitialResultSet(terms: string[], callback, cancellable: Gio.Cancellable) {
+    async getInitialResultSet(terms: string[]) : Promise<string[]> {
         console.debug(`getInitialResultSet([${terms}])`);
         if (terms != null && terms.length > 0 && terms[0].substring(0, 2) === "p:"){
              // show the loading message
@@ -198,40 +198,41 @@ export default class PixabaySearchProvider<
             this._timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1500, () => {
                 // now search
                 let query = terms.join(' ');
-                this._api.get(
-                    this._getQuery(query.substring(2)),
+
+                this._pixabayClient.search(
+                    query.substring(2),
                     this._getResultSet.bind(this),
                     callback,
-                    this._timeoutId
-                );
+                    this._timeoutId);
                 return false;
             });
         } else {
             // return an emtpy result set
-            this._getResultSet(null, {}, callback, 0);
+            this._getResultSet(null, null, callback, 0);
         }
-        this._loadWorkspaces();
-        const searchTerm = terms.join("").toLowerCase();
-        return Object.keys(this.workspaces).filter((id) =>
-            this.workspaces[id].name.toLowerCase().includes(searchTerm),
-        );
+        return [];
     }
 
-    _getResultSet(error: null|string, result: Object|null, callback: Function, timeoutId: number) {
+    _getResultSet(error: null|string, images: PixabayImage[]|null, callback: Function, timeoutId: number) {
         console.log("Error: ", error);
-        console.log("Result: ", result);
+        console.log("Result: ", images);
         console.log("Callback: ", callback);
         console.log("timeoutId: ", timeoutId);
         console.log('FFFF: 01');
         let results: string[] = [];
-        if (timeoutId === this._timeoutId && result && result.length > 0) {
+        if (timeoutId === this._timeoutId) {
             console.log('FFFF: 02');
-            if(result.length > 0){
+            if(images !== null && images.length > 0){
                 console.log('FFFF: 03');
-                result.forEach((aresult) => {
+                images.forEach((image) => {
                     console.log('FFFF: 04');
-                    this._results.set(aresult.id, aresult);
-                    results.push(aresult.id);
+                    const imageId = `${image.id}`;
+                    this._results.set(imageId, new Message(
+                        imageId,
+                        image.tags,
+                        image.user
+                    ));
+                    results.push(imageId);
                 });
                 callback(results);
             }else{
@@ -245,10 +246,8 @@ export default class PixabaySearchProvider<
 
 
     async getSubsearchResultSet(previousResults: string[], terms: string[]) {
-        const searchTerm = terms.join("").toLowerCase();
-        return previousResults.filter((id) =>
-            this.workspaces[id].name.toLowerCase().includes(searchTerm),
-        );
+        console.log(`${previousResults} => ${terms}`)
+        //this.getInitialResultSet(terms, callback, cancellable);
     }
 
     async getResultMetas(ids: string[]) {

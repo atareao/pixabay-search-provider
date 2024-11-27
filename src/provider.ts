@@ -53,8 +53,6 @@ export default class PixabaySearchProvider<
     constructor(extension: T) {
         this._pixabayClient = new Pixabay("", "es");
         this._extension = extension;
-        this._findApp();
-        this._loadWorkspaces();
         this.appInfo = this.app?.appInfo;
         this._results = new Map();
         this._timeoutId = 0;
@@ -72,30 +70,11 @@ export default class PixabaySearchProvider<
         callback([identifier]);
     }
 
-    async getInitialResultSet(terms: string[]) : Promise<string[]> {
+    async getInitialResultSet(terms: string[], cb: (results: string[]) => void, cancellable: Gio.Cancellable) {
         console.debug(`getInitialResultSet([${terms}])`);
         if (terms != null && terms.length > 0 && terms[0].substring(0, 2) === "p:"){
-             // show the loading message
-            this.showMessage('__loading__', callback);
-            // remove previous timeout
-            if (this._timeoutId > 0) {
-                GLib.source_remove(this._timeoutId);
-                this._timeoutId = 0;
-            }
-            this._timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1500, () => {
-                // now search
-                let query = terms.join(' ');
-
-                this._pixabayClient.search(
-                    query.substring(2),
-                    this._getResultSet.bind(this),
-                    callback,
-                    this._timeoutId);
-                return false;
-            });
-        } else {
-            // return an emtpy result set
-            this._getResultSet(null, null, callback, 0);
+            const query = terms.join(" ");
+            const response = await this._pixabayClient.search(query, cancellable);
         }
         return [];
     }

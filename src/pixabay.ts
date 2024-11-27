@@ -51,7 +51,7 @@ export class Pixabay {
         this._lang = lang;
     }
 
-    async search(query: string): Promise<PixabayImage[]>{
+    async search(query: string, cancellable: Gio.Cancellable): Promise<PixabayImage[]>{
         try{
             const session = new Soup.Session();
             const message = Soup.Message.new_from_encoded_form(
@@ -64,7 +64,7 @@ export class Pixabay {
                 })
             );
             const bytes = await session.send_and_read_async(message,
-                GLib.PRIORITY_DEFAULT, null);
+                GLib.PRIORITY_DEFAULT, cancellable);
             if(bytes !== null){
                 const response = (new TextDecoder())
                     .decode(bytes.get_data()?.buffer);

@@ -4,14 +4,8 @@ import Shell from "gi://Shell";
 import Clutter from 'gi://Clutter?version=15';
 import { Extension, gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
 import { AppSearchProvider } from "resource:///org/gnome/shell/ui/appDisplay.js";
-import { fileExists, readFile, uniqueId } from "./util.js";
 import { Pixabay, PixabayImage }  from "./pixabay.js";
 
-interface VSStorage {
-    profileAssociations: {
-        workspaces: Record<string, string>;
-    };
-}
 
 interface ResultMeta {
     id: string;
@@ -45,7 +39,7 @@ export default class PixabaySearchProvider<
     _pixabayClient: Pixabay;
     _extension: T;
     _timeoutId: number;
-    _results: Map<string, ResultMeta>;
+    _results: Map<string, PixabayImage>;
     _messages: Map<string, Object>;
     app: Shell.App | null = null;
     appInfo: Gio.DesktopAppInfo | undefined;
@@ -70,50 +64,35 @@ export default class PixabaySearchProvider<
         callback([identifier]);
     }
 
-    async getInitialResultSet(terms: string[], cb: (results: string[]) => void, cancellable: Gio.Cancellable) {
+    async getInitialResultSet(terms: string[], cancellable: Gio.Cancellable) : Promise<string[]> {
         console.debug(`getInitialResultSet([${terms}])`);
+        const results = [];
         if (terms != null && terms.length > 0 && terms[0].substring(0, 2) === "p:"){
             const query = terms.join(" ");
             const response = await this._pixabayClient.search(query, cancellable);
-        }
-        return [];
-    }
-
-    _getResultSet(error: null|string, images: PixabayImage[]|null, callback: Function, timeoutId: number) {
-        console.log("Error: ", error);
-        console.log("Result: ", images);
-        console.log("Callback: ", callback);
-        console.log("timeoutId: ", timeoutId);
-        console.log('FFFF: 01');
-        let results: string[] = [];
-        if (timeoutId === this._timeoutId) {
-            console.log('FFFF: 02');
-            if(images !== null && images.length > 0){
-                console.log('FFFF: 03');
-                images.forEach((image) => {
-                    console.log('FFFF: 04');
-                    const imageId = `${image.id}`;
-                    this._results.set(imageId, new Message(
-                        imageId,
-                        image.tags,
-                        image.user
-                    ));
-                    results.push(imageId);
-                });
-                callback(results);
-            }else{
-                this.showMessage('__nothing_found__', callback);
+            for(let image of response){
+                this._results.set(`${image.id}`, image);
+                results.push(`${image.id}`);
             }
-        } else if (error) {
-            // Let the user know that an error has occurred.
-            this.showMessage('__error__', callback);
         }
+        return results;
     }
 
-
-    async getSubsearchResultSet(previousResults: string[], terms: string[]) {
+    async getSubsearchResultSet(previousResults: string[], terms: string[]) : Promise<string[]> {
         console.log(`${previousResults} => ${terms}`)
-        //this.getInitialResultSet(terms, callback, cancellable);
+        return previousResults.filter((id) => {
+            let image = this._results.get(id);
+            if(image === undefined){
+                return false;
+            }
+            let include = true;
+            for(let term of terms){
+                if(!image.tags.includes(term)){
+                    include = false;
+                    break;
+                }
+            }
+        });
     }
 
     async getResultMetas(ids: string[]) {

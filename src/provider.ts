@@ -103,6 +103,7 @@ export default class PixabaySearchProvider<
         callback(metas);
     }
 
+
     getInitialResultSet(terms: string[], callback: Function, cancellable: Gio.Cancellable) : void{
         console.log(`getInitialResultSet([${terms}])`);
         if (terms != null && terms.length > 0 && terms[0].substring(0, 2) === "p:"){
@@ -110,7 +111,8 @@ export default class PixabaySearchProvider<
                 GLib.source_remove(this._timeoutId);
                 this._timeoutId = 0;
             }
-            this._timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
+            let pixabaySourceFunc: GLib.SourceFunc;
+            pixabaySourceFunc = () => {
                 const query = terms.join(" ");
                 const response = this._pixabayClient.search(query, cancellable);
                 if(response) {
@@ -120,9 +122,10 @@ export default class PixabaySearchProvider<
                         results.push(`${image.id}`);
                     }
                     callback(results);
-                    return GLib.SOURCE_REMOVE;
                 }
-            });
+                return true;
+            };
+            this._timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, pixabaySourceFunc);
         }
     }
 

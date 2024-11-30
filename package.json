@@ -16,6 +16,8 @@
   "homepage": "https://github.com/atareao/pixabay-search-provider#readme",
   "sideEffects": false,
   "devDependencies": {
+    "@swc/cli": "^0.5.1",
+    "@swc/core": "^1.9.3",
     "eslint": "^9.15.0",
     "eslint-plugin-jsdoc": "^50.5.0",
     "typescript": "^5.7.2"

@@ -13,7 +13,7 @@ type Window = Adw.PreferencesWindow & {
 export default class ExamplePreferences extends ExtensionPreferences {
   _settings: Gio.Settings | null = null;
 
-  fillPreferencesWindow(window: Window) {
+  override async fillPreferencesWindow(window: Window): Promise<void> {
     // Create a preferences page, with a single group
     const page = new Adw.PreferencesPage({
       title: _("General"),

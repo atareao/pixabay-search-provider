@@ -52,6 +52,7 @@ export class Pixabay {
     }
 
     async search_async(query: string, cancellable: Gio.Cancellable): Promise<PixabayImage[]>{
+        console.log("[PSP]", `Looking for: ${query}`);
         try{
             const session = new Soup.Session();
             const message = Soup.Message.new_from_encoded_form(
@@ -68,18 +69,19 @@ export class Pixabay {
             if(bytes !== null){
                 const response = (new TextDecoder())
                     .decode(bytes.get_data()?.buffer);
-                console.log("Response: ", response);
+                console.log("[PSP]", "Response: ", response);
                 const pixabayResponse: PixabayResponse = JSON.parse(response);
                 return pixabayResponse.hits;
             }
         }catch(e){
-            console.error("Error: ", e);
+            console.error("[PSP]", "Error: ", e);
             throw new Error(`Error: ${e}`);
         }
         return [];
     }
 
-    search(query: string, cancellable: Gio.Cancellable): PixabayImage[]{
+    search(query: string, _cancellable: Gio.Cancellable): PixabayImage[]{
+        console.log("[PSP]", `Looking for: ${query}`);
         try{
             const session = new Soup.Session();
             const message = Soup.Message.new_from_encoded_form(
@@ -91,16 +93,16 @@ export class Pixabay {
                     q: query
                 })
             );
-            const bytes = session.send_and_read(message, cancellable);
+            const bytes = session.send_and_read(message, null);
             if(bytes !== null){
                 const response = (new TextDecoder())
                     .decode(bytes.get_data()?.buffer);
-                console.log("Response: ", response);
+                console.log("[PSP]", `Response: ${response}`);
                 const pixabayResponse: PixabayResponse = JSON.parse(response);
                 return pixabayResponse.hits;
             }
         }catch(e){
-            console.error("Error: ", e);
+            console.error("[PSP]", "Error: ", e);
             throw new Error(`Error: ${e}`);
         }
         return [];

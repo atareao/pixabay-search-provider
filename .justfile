@@ -21,6 +21,12 @@ make:
     @cp stylesheet.css dist/
     @cp metadata.json dist/
 
+install:
+    @just make
+    @rm -rf ~/.local/share/gnome-shell/extensions/{{NAME}}@{{DOMAIN}}
+    @mkdir -p ~/.local/share/gnome-shell/extensions/{{NAME}}@{{DOMAIN}}
+    @cp -r dist/* ~/.local/share/gnome-shell/extensions/{{NAME}}@{{DOMAIN}}/
+
 clean:
     @rm -rf dist
     @mkdir dist

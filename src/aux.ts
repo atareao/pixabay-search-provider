@@ -57,14 +57,14 @@ export interface SearchProvider {
     *
     * This method is called to get a `ResultMeta` for each identifier.
     */
-    getResultMetas(results: string[], callback: Function, cancellable: Gio.Cancellable): void;
+    getResultMetas(results: string[], cancellable: Gio.Cancellable): Promise<ResultMeta[]>;
     /**
     * Initiate a new search.
     *
     * This method is called to start a new search and should return a list of
     * unique identifiers for the results.
     */
-    getInitialResultSet(terms: string[], callback: Function, cancellable: Gio.Cancellable): void;
+    getInitialResultSet(terms: string[], cancellable: Gio.Cancellable): Promise<string[]>;
     /**
     * Refine the current search.
     *
@@ -75,7 +75,7 @@ export interface SearchProvider {
     * efficiently than running a new search, or simply pass the terms to the
     * implementation of `getInitialResultSet
     */
-    getSubsearchResultSet(results: string[], terms: string[], callback: Function, cancellable: Gio.Cancellable): void;
+    getSubsearchResultSet(results: string[], terms: string[], cancellable: Gio.Cancellable): Promise<string[]>;
     /**
     * Filter the current search.
     *

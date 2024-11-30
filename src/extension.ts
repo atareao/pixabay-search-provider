@@ -3,9 +3,10 @@ import * as Main from "resource:///org/gnome/shell/ui/main.js";
 import { Extension } from "resource:///org/gnome/shell/extensions/extension.js";
 import { AppSearchProvider } from "resource:///org/gnome/shell/ui/appDisplay.js";
 import PixabaySearchProvider from "./provider.js";
+import { SearchProvider } from "./aux.js";
 
-export default class PixabaySCodeSearchProviderExtension extends Extension {
-  provider: AppSearchProvider | null = null;
+export default class PixabaySearchProviderExtension extends Extension {
+  provider: SearchProvider | null = null;
   _settings: Gio.Settings | null = null;
 
   enable() {

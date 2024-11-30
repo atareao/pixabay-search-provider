@@ -51,7 +51,7 @@ export class Pixabay {
         this._lang = lang;
     }
 
-    async search(query: string, cancellable: Gio.Cancellable): Promise<PixabayImage[]>{
+    async search_async(query: string, cancellable: Gio.Cancellable): Promise<PixabayImage[]>{
         try{
             const session = new Soup.Session();
             const message = Soup.Message.new_from_encoded_form(
@@ -65,6 +65,33 @@ export class Pixabay {
             );
             const bytes = await session.send_and_read_async(message,
                 GLib.PRIORITY_DEFAULT, cancellable);
+            if(bytes !== null){
+                const response = (new TextDecoder())
+                    .decode(bytes.get_data()?.buffer);
+                console.log("Response: ", response);
+                const pixabayResponse: PixabayResponse = JSON.parse(response);
+                return pixabayResponse.hits;
+            }
+        }catch(e){
+            console.error("Error: ", e);
+            throw new Error(`Error: ${e}`);
+        }
+        return [];
+    }
+
+    search(query: string, cancellable: Gio.Cancellable): PixabayImage[]{
+        try{
+            const session = new Soup.Session();
+            const message = Soup.Message.new_from_encoded_form(
+                'GET',
+                this.baseUrl,
+                Soup.form_encode_hash({
+                    key: this._key,
+                    lang: this._lang,
+                    q: query
+                })
+            );
+            const bytes = session.send_and_read(message, cancellable);
             if(bytes !== null){
                 const response = (new TextDecoder())
                     .decode(bytes.get_data()?.buffer);

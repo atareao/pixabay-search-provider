@@ -23,6 +23,9 @@ importers:
       '@girs/soup-3.0':
         specifier: 3.6.0-4.0.0-beta.19
         version: 3.6.0-4.0.0-beta.19
+      '@girs/st-15':
+        specifier: 15.0.0-4.0.0-beta.19
+        version: 15.0.0-4.0.0-beta.19
     devDependencies:
       eslint:
         specifier: ^9.15.0

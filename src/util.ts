@@ -1,10 +1,10 @@
-import Glib from "gi://GLib";
+import GLib from "gi://GLib";
 
 export const uniqueId = () =>
     [...Array(8)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
 
 export const readFile = (path: string): string | undefined => {
-    const [ok, data] = Glib.file_get_contents(path);
+    const [ok, data] = GLib.file_get_contents(path);
     if (!ok) {
         return;
     }
@@ -13,4 +13,4 @@ export const readFile = (path: string): string | undefined => {
 };
 
 export const fileExists = (path: string): boolean =>
-    Glib.file_test(path, Glib.FileTest.EXISTS);
+    GLib.file_test(path, GLib.FileTest.EXISTS);
